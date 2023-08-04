@@ -1,6 +1,5 @@
-import { React } from 'react';
+import { React, useEffect } from 'react';
 import { GridComponent, ColumnsDirective, ColumnDirective, Page, Selection, Inject, Edit, Toolbar, Sort, Filter } from '@syncfusion/ej2-react-grids';
-import { productsData, productsGrid, unitData } from '../Data/dummy';
 import { DialogComponent } from '@syncfusion/ej2-react-popups';
 import { TextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { DropDownListComponent } from '@syncfusion/ej2-react-dropdowns';
@@ -8,6 +7,8 @@ import { Header } from '../Components';
 import { useState } from 'react';
 import ProductDetail from './ProductDetail';
 import { useStateContext } from "../Contexts/ContextProvider";
+import ScaleLoader from "react-spinners/ScaleLoader";
+import axios from 'axios';
 
 const Products = () => {
   const { currentColor } = useStateContext();
@@ -16,6 +17,8 @@ const Products = () => {
   const [labelButton, setLabelButton] = useState('');
   const [visibility, setDialogVisibility] = useState(false);
 
+  const [productsData, setProductsData] = useState([])
+  const [unitsData, setUnitsData] = useState([])
   // product information
   const [productCode, setProductCode] = useState('');
   const [productName, setProductName] = useState('');
@@ -27,7 +30,38 @@ const Products = () => {
   // dialog confirm delete product
   const [visibilityDelete, setVisibilityDelete] = useState(false);
 
+  // spinner loading
+  const [loading, setLoading] = useState(true);
+  const cssSpinner = {
+    position: 'absolute',
+    top: '45%',
+    left: '60%',
+    zIndex: 999,
+  }
 
+  useEffect(() => {
+    // call api get all products
+    axios.get('/products')
+      .then((res) => {
+        setProductsData(res.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log(error);
+      });
+
+    // call api get unit
+    axios.get('/units')
+      .then((res) => {
+        setUnitsData(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [])
+
+  // Dialog
   function onOverlayClick() {
     setDialogVisibility(false);
     setVisibilityDelete(false);
@@ -169,7 +203,16 @@ const Products = () => {
   const fieldUnit = { text: 'unit_name', value: 'id' };
   return (
     <div className="m-2 md:m-8 mt-24 p-2 md:p-8 bg-white rounded-2xl" id='dialog-target'>
-      {/* <Header category="" title="Danh sách sản phẩm" /> */}
+      <ScaleLoader
+        loading={loading}
+        color={currentColor}
+        height={40}
+        margin={3}
+        radius={2}
+        speedMultiplier={1}
+        width={5}
+        cssOverride={cssSpinner}
+      />
       <div className='mb-5'>
         <label className='text-2xl font-extrabold tracking-tight text-slate-900'>
           Danh sách sản phẩm
@@ -189,7 +232,7 @@ const Products = () => {
         <ColumnsDirective>
           <ColumnDirective field='product_code' width='70' headerText='Mã sản phẩm' textAlign="Left" />
           <ColumnDirective field='product_name' width='300' headerText='Tên sản phẩm' textAlign="Left" />
-          <ColumnDirective field='unit' width='50' headerText='Đơn vị' textAlign="Center" />
+          <ColumnDirective field='unit_name' width='50' headerText='Đơn vị' textAlign="Center" />
           <ColumnDirective field='Id' width='20' headerText='' template={editTemplate} textAlign="Center" />
           <ColumnDirective field='Id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
         </ColumnsDirective>
@@ -205,7 +248,7 @@ const Products = () => {
         <TextBoxComponent placeholder="Mã sản phẩm" floatLabelType="Auto" value={productCode} input={(e) => setProductCode(e.value)}></TextBoxComponent>
         <TextBoxComponent placeholder="Tên sản phẩm" floatLabelType="Auto" value={productName} style={styleInput} input={(e) => setProductName(e.value)}></TextBoxComponent>
 
-        <DropDownListComponent onChange={e => setUnit(e.target.value)} dataSource={unitData}
+        <DropDownListComponent onChange={e => setUnit(e.target.value)} dataSource={unitsData}
           fields={fieldUnit} style={styleInput}
           floatLabelType="Auto" placeholder="Đơn vị tính"
         />
@@ -221,8 +264,6 @@ const Products = () => {
       >
         <h2>Bạn có chắc chắn muốn xoá sản phẩm không ?</h2>
       </DialogComponent>
-
-
     </div >
   )
 }

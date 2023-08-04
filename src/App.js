@@ -4,7 +4,7 @@ import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 
 import { Navbar, Footer, Sidebar, ThemeSettings } from './Components';
-import { Employees, Customers, Home, Products, Order } from './Pages';
+import { Customers, Home, Products, Order, OrderManager } from './Pages';
 import './App.css';
 
 import { useStateContext } from './Contexts/ContextProvider';
@@ -70,7 +70,7 @@ const App = () => {
                 <Route path="/products" element={<Products />} />
                 {/* pages  */}
                 <Route path="/order" element={<Order />} />
-                <Route path="/employees" element={<Employees />} />
+                <Route path="/order-manager" element={<OrderManager />} />
                 <Route path="/customers" element={<Customers />} />
               </Routes>
             </div>

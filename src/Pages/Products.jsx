@@ -271,8 +271,7 @@ const Products = () => {
       <ToastContainer autoClose={3000} />
       <ScaleLoader
         loading={loading} color={currentColor} height={40} margin={3} radius={2}
-        speedMultiplier={1} width={5} cssOverride={cssSpinner}
-      />
+        speedMultiplier={1} width={5} cssOverride={cssSpinner} />
       <div className='mb-5'>
         <label className='text-2xl font-extrabold tracking-tight text-slate-900'>
           Danh sách sản phẩm

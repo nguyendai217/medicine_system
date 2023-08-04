@@ -275,8 +275,8 @@ const Customers = () => {
         dataSource={customersData} sortSettings={sortingOptions} allowPaging allowSorting toolbar={['Search']} width='auto' pageSettings={pageOptions}>
         <ColumnsDirective>
           <ColumnDirective field='name' width='100' headerText='Tên khách hàng' textAlign="Left" />
-          <ColumnDirective field='phone_number' width='80' headerText='Số điện thoại' textAlign="Left" />
-          <ColumnDirective field='address' width='200'  headerText='Địa chỉ' textAlign="Left" />
+          <ColumnDirective field='phone_number' width='60' headerText='Số điện thoại' textAlign="Left" />
+          <ColumnDirective field='address' width='200' headerText='Địa chỉ' textAlign="Left" />
           <ColumnDirective field='id' width='20' headerText='' template={editTemplate} textAlign="Center" />
           <ColumnDirective field='id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
         </ColumnsDirective>

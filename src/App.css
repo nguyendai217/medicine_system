@@ -99,3 +99,9 @@
 .btn-add-product:hover {
   background-color: aquamarine;
 }
+
+.btn-add-customer {
+  padding: 8px;
+  border-radius: 5px;
+  color: aliceblue;
+}

@@ -3,11 +3,11 @@ import { GridComponent, ColumnsDirective, ColumnDirective, Page, Selection, Inje
 import { DialogComponent } from '@syncfusion/ej2-react-popups';
 import { TextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { DropDownListComponent } from '@syncfusion/ej2-react-dropdowns';
-import { Header } from '../Components';
 import { useState } from 'react';
-import ProductDetail from './ProductDetail';
 import { useStateContext } from "../Contexts/ContextProvider";
 import ScaleLoader from "react-spinners/ScaleLoader";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
 const Products = () => {
@@ -24,7 +24,6 @@ const Products = () => {
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
   const [unit, setUnit] = useState('');
-  const [price, setPrice] = useState();
   const [productId, setProductId] = useState();
 
   // dialog confirm delete product
@@ -40,7 +39,21 @@ const Products = () => {
   }
 
   useEffect(() => {
-    // call api get all products
+    retriveData();
+    // call api get units
+    axios.get('/units')
+      .then((res) => {
+        setUnitsData(res.data);
+      })
+      .catch((error) => {
+        console.log("Call API GET :/units error", error);
+        toast.error('Lỗi truy vấn thông tin đơn vị !', {
+          position: toast.POSITION.TOP_RIGHT
+        });
+      });
+  }, [])
+
+  function retriveData() {
     axios.get('/products')
       .then((res) => {
         setProductsData(res.data);
@@ -48,18 +61,12 @@ const Products = () => {
       })
       .catch((error) => {
         setLoading(false);
-        console.log(error);
+        console.log("Call API :/products error", error);
+        toast.error('Lỗi truy vấn thông tin sản phẩm !', {
+          position: toast.POSITION.TOP_RIGHT
+        });
       });
-
-    // call api get unit
-    axios.get('/units')
-      .then((res) => {
-        setUnitsData(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [])
+  }
 
   // Dialog
   function onOverlayClick() {
@@ -70,6 +77,7 @@ const Products = () => {
   function dialogClose() {
     clearData();
     setDialogVisibility(false);
+    setVisibilityDelete(false);
   }
 
   function addProduct() {
@@ -91,15 +99,56 @@ const Products = () => {
       },
       click: () => {
         if (!productName || !productCode || !unit) {
-          alert("Vui lòng nhập đầy đủ thông tin sản phẩm !");
+          toast.error('Vui lòng nhập đầy đủ thông tin sản phẩm.', {
+            position: toast.POSITION.TOP_RIGHT
+          });
           return;
         }
         if (!productId) {
-          alert('add new product');
+          var objProduct = {};
+          objProduct['product_code'] = productCode;
+          objProduct['product_name'] = productName;
+          objProduct['description'] = description;
+          objProduct['unit_id'] = unit;
+          // call api insert data
+          axios.post('/products', objProduct)
+            .then(resp => {
+              if (resp.status == '201') {
+                toast.success(resp.data, {
+                  position: toast.POSITION.TOP_RIGHT
+                });
+              }
+            })
+            .catch(error => {
+              toast.error('Thêm mới sản phẩm thất bại !', {
+                position: toast.POSITION.TOP_RIGHT
+              });
+              console.error("Call API POST :/products error", error);
+            });
         } else {
-          alert('update product');
+          //update product
+          var objProduct = {};
+          objProduct['product_code'] = productCode;
+          objProduct['product_name'] = productName;
+          objProduct['description'] = description;
+          objProduct['unit_id'] = unit;
+          axios.put('/products/' + productId, objProduct)
+            .then(resp => {
+              if (resp.status == '200') {
+                toast.success(resp.data, {
+                  position: toast.POSITION.TOP_RIGHT
+                });
+              }
+            })
+            .catch(error => {
+              toast.error('Cập nhật sản phẩm thất bại !', {
+                position: toast.POSITION.TOP_RIGHT
+              });
+              console.error("Call API PUT :/products/:productId error", error);
+            });
         }
         setDialogVisibility(false);
+        retriveData();
         clearData();
       },
     },
@@ -115,18 +164,15 @@ const Products = () => {
     },
   ];
 
-  const pageOptions = {
-    pageSize: 10, pageSizes: true
-  };
-
   function clearData() {
     setProductCode('');
     setProductName('');
     setDescription('');
+    setUnit(null);
   }
 
   const editTemplate = (props) => {
-    const productId = props.Id;
+    const productId = props.id;
     return (
       <div>
         <button className='e-icons e-edit-2 e-medium' onClick={() => editProduct(productId)} ></button>
@@ -136,30 +182,31 @@ const Products = () => {
 
   function editProduct(productId) {
     setProductId(productId);
-
-    // call api with product ID = 2
-    const product = {
-      id: 2,
-      product_name: '15B With Ginseng (Hộp 10 vỉ x 10 viên).Việt Pháp',
-      product_code: '017766',
-      description: 'TPCN giúp bồi bổ sức khỏe, kích thích tiêu hóa ăn ngon miệng, phòng suy dinh dưỡng,tăng cường hệ miễn dịch của cơ thể, nâng cao thể lực, trí lực.',
-      unit: '1'
-    }
     setHeaderDialog("Cập nhật sản phẩm");
     setLabelButton('Cập nhật');
-    setProductCode(product.product_code);
-    setProductName(product.product_name);
-    setDescription(product.description);
-    setUnit(product.unit);
+    console.log('productId', productId)
+    // call api with product ID
+    axios.get('/products/' + productId)
+      .then((res) => {
+        setProductCode(res.data.product_code);
+        setProductName(res.data.product_name);
+        setDescription(res.data.description);
+        setUnit(res.data.unit_id);
+      })
+      .catch((error) => {
+        toast.error('Lỗi truy vấn thông tin sản phẩm !', {
+          position: toast.POSITION.TOP_RIGHT
+        });
+        console.log("Call API GET :/products/:productId error", error);
+      });
     setDialogVisibility(true);
   }
 
   // Delete item product
   const deleteTemplate = (props) => {
-    const productId = props.Id;
     return (
       <div>
-        <button className='e-icons e-trash e-medium' onClick={() => deleteProduct(productId)} ></button>
+        <button className='e-icons e-trash e-medium' onClick={() => deleteProduct(props.id)} ></button>
       </div>
     );
   };
@@ -167,10 +214,6 @@ const Products = () => {
   function deleteProduct(productId) {
     setProductId(productId);
     setVisibilityDelete(true);
-  }
-
-  function closeDialogDelete() {
-    setVisibilityDelete(false);
   }
 
   const buttonDialogDelete = [
@@ -184,9 +227,22 @@ const Products = () => {
         if (!productId) {
           return;
         }
-        alert("call api delete product Id: " + productId);
+        // call api delete 
+        axios.delete('/products/' + productId)
+          .then((res) => {
+            toast.success(res.data, {
+              position: toast.POSITION.TOP_RIGHT
+            });
+          })
+          .catch((error) => {
+            toast.error('Lỗi xoá thông tin sản phẩm !', {
+              position: toast.POSITION.TOP_RIGHT
+            });
+            console.log("Call API DELETE :/products/:productId error", error);
+          });
         setVisibilityDelete(false);
         setProductId('');
+        retriveData();
       },
     },
     {
@@ -195,23 +251,27 @@ const Products = () => {
         cssClass: 'e-flat',
       },
       click: () => {
+        setProductId('');
         setVisibilityDelete(false);
       },
     },
   ];
 
   const fieldUnit = { text: 'unit_name', value: 'id' };
+
+  const sortingOptions = {
+    columns: [{ field: 'id', direction: 'descending' }]
+  };
+
+  const pageOptions = {
+    pageSize: 10, pageSizes: true
+  };
   return (
     <div className="m-2 md:m-8 mt-24 p-2 md:p-8 bg-white rounded-2xl" id='dialog-target'>
+      <ToastContainer autoClose={3000} />
       <ScaleLoader
-        loading={loading}
-        color={currentColor}
-        height={40}
-        margin={3}
-        radius={2}
-        speedMultiplier={1}
-        width={5}
-        cssOverride={cssSpinner}
+        loading={loading} color={currentColor} height={40} margin={3} radius={2}
+        speedMultiplier={1} width={5} cssOverride={cssSpinner}
       />
       <div className='mb-5'>
         <label className='text-2xl font-extrabold tracking-tight text-slate-900'>
@@ -221,47 +281,35 @@ const Products = () => {
       </div>
 
       <GridComponent
-        dataSource={productsData}
-        allowPaging
-        allowSorting
-        toolbar={['Search']}
-        //editSettings={{ allowDeleting: true, allowEditing: true }}
-        width='auto'
-        pageSettings={pageOptions}
-      >
+        dataSource={productsData} sortSettings={sortingOptions} allowPaging allowSorting toolbar={['Search']} width='auto' pageSettings={pageOptions}>
         <ColumnsDirective>
           <ColumnDirective field='product_code' width='70' headerText='Mã sản phẩm' textAlign="Left" />
           <ColumnDirective field='product_name' width='300' headerText='Tên sản phẩm' textAlign="Left" />
           <ColumnDirective field='unit_name' width='50' headerText='Đơn vị' textAlign="Center" />
-          <ColumnDirective field='Id' width='20' headerText='' template={editTemplate} textAlign="Center" />
-          <ColumnDirective field='Id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
+          <ColumnDirective field='id' width='20' headerText='' template={editTemplate} textAlign="Center" />
+          <ColumnDirective field='id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
         </ColumnsDirective>
         <Inject services={[Page, Toolbar, Selection, Edit, Sort, Filter]} />
       </GridComponent>
 
       {/* Dialog Component add product */}
-      <DialogComponent width="600px" isModal={true} visible={visibility}
-        close={dialogClose} overlayClick={onOverlayClick}
-        showCloseIcon={true} header={headerDialog} closeOnEscape={false}
-        buttons={buttonDialog} position={positionDialog}
-      >
+      <DialogComponent
+        width="600px" isModal={true} visible={visibility} close={dialogClose} overlayClick={onOverlayClick}
+        showCloseIcon={true} header={headerDialog} closeOnEscape={false} buttons={buttonDialog} position={positionDialog}>
         <TextBoxComponent placeholder="Mã sản phẩm" floatLabelType="Auto" value={productCode} input={(e) => setProductCode(e.value)}></TextBoxComponent>
         <TextBoxComponent placeholder="Tên sản phẩm" floatLabelType="Auto" value={productName} style={styleInput} input={(e) => setProductName(e.value)}></TextBoxComponent>
-
         <DropDownListComponent onChange={e => setUnit(e.target.value)} dataSource={unitsData}
-          fields={fieldUnit} style={styleInput}
-          floatLabelType="Auto" placeholder="Đơn vị tính"
-        />
-        <TextBoxComponent multiline={true} placeholder="Mô tả sản phẩm" floatLabelType="Auto" style={styleInput}></TextBoxComponent>
+          value={unit} showClearButton={true} fields={fieldUnit} style={styleInput} floatLabelType="Auto" placeholder="Đơn vị tính" />
+        <TextBoxComponent multiline={true} placeholder="Mô tả sản phẩm" floatLabelType="Auto"
+          style={styleInput} value={description} input={(e) => setDescription(e.value)}>
+        </TextBoxComponent>
       </DialogComponent>
-
 
       {/* Dialog confirm delete */}
       <DialogComponent width="600px" isModal={true} visible={visibilityDelete}
-        close={closeDialogDelete} overlayClick={onOverlayClick}
+        close={dialogClose} overlayClick={onOverlayClick}
         showCloseIcon={true} header='Xoá sản phẩm' closeOnEscape={false}
-        buttons={buttonDialogDelete} position={positionDialog}
-      >
+        buttons={buttonDialogDelete} position={positionDialog}>
         <h2>Bạn có chắc chắn muốn xoá sản phẩm không ?</h2>
       </DialogComponent>
     </div >

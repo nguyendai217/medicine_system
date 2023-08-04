@@ -6,7 +6,6 @@ import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import { Navbar, Footer, Sidebar, ThemeSettings } from './Components';
 import { Employees, Customers, Home, Products, Order } from './Pages';
 import './App.css';
-//import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { useStateContext } from './Contexts/ContextProvider';
 

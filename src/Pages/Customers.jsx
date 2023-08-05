@@ -48,7 +48,6 @@ const Customers = () => {
       })
       .catch((error) => {
         setLoading(false);
-        console.log("Call API :/customers error", error);
         toast.error('Lỗi truy vấn thông tin khách hàng !', {
           position: toast.POSITION.TOP_RIGHT
         });
@@ -106,6 +105,7 @@ const Customers = () => {
                 toast.success(resp.data, {
                   position: toast.POSITION.TOP_RIGHT
                 });
+                retriveData();
               }
             })
             .catch(error => {
@@ -127,7 +127,9 @@ const Customers = () => {
                 toast.success(resp.data, {
                   position: toast.POSITION.TOP_RIGHT
                 });
-              }
+                retriveData();
+              };
+
             })
             .catch(error => {
               toast.error('Cập nhật thông tin khách hàng thất bại !', {
@@ -137,7 +139,6 @@ const Customers = () => {
             });
         }
         setDialogVisibility(false);
-        retriveData();
         clearData();
       },
     },
@@ -186,7 +187,6 @@ const Customers = () => {
         toast.error('Lỗi truy vấn thông tin khách hàng !', {
           position: toast.POSITION.TOP_RIGHT
         });
-        console.log("Call API GET :/customers/:customerId error", error);
       });
 
     setDialogVisibility(true);
@@ -223,17 +223,15 @@ const Customers = () => {
             toast.success(res.data, {
               position: toast.POSITION.TOP_RIGHT
             });
+            retriveData();
           })
           .catch((error) => {
             toast.error('Lỗi xoá thông tin khách hàng !', {
               position: toast.POSITION.TOP_RIGHT
             });
-            console.log("Call API DELETE :/customers/:customerId error", error);
           });
-
         setCustomerId('');
         setVisibilityDelete(false);
-        retriveData();
       },
     },
     {
@@ -260,7 +258,7 @@ const Customers = () => {
       <ToastContainer autoClose={3000} />
       <ScaleLoader
         loading={loading} color={currentColor} height={40} margin={3} radius={2}
-        speedMultiplier={1} width={5} cssOverride={cssSpinner}
+        width={5} cssOverride={cssSpinner}
       />
       <div className='mb-5'>
         <label className='text-2xl font-extrabold tracking-tight text-slate-900'>

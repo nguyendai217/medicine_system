@@ -61,7 +61,6 @@ const Products = () => {
       })
       .catch((error) => {
         setLoading(false);
-        console.log("Call API :/products error", error);
         toast.error('Lỗi truy vấn thông tin sản phẩm !', {
           position: toast.POSITION.TOP_RIGHT
         });
@@ -117,13 +116,13 @@ const Products = () => {
                 toast.success(resp.data, {
                   position: toast.POSITION.TOP_RIGHT
                 });
+                retriveData();
               }
             })
             .catch(error => {
               toast.error('Thêm mới sản phẩm thất bại !', {
                 position: toast.POSITION.TOP_RIGHT
               });
-              console.error("Call API POST :/products error", error);
             });
         } else {
           //update product
@@ -138,17 +137,16 @@ const Products = () => {
                 toast.success(resp.data, {
                   position: toast.POSITION.TOP_RIGHT
                 });
+                retriveData();
               }
             })
             .catch(error => {
               toast.error('Cập nhật sản phẩm thất bại !', {
                 position: toast.POSITION.TOP_RIGHT
               });
-              console.error("Call API PUT :/products/:productId error", error);
             });
         }
         setDialogVisibility(false);
-        retriveData();
         clearData();
       },
     },
@@ -184,7 +182,6 @@ const Products = () => {
     setProductId(productId);
     setHeaderDialog("Cập nhật sản phẩm");
     setLabelButton('Cập nhật');
-    console.log('productId', productId)
     // call api with product ID
     axios.get('/products/' + productId)
       .then((res) => {
@@ -197,7 +194,6 @@ const Products = () => {
         toast.error('Lỗi truy vấn thông tin sản phẩm !', {
           position: toast.POSITION.TOP_RIGHT
         });
-        console.log("Call API GET :/products/:productId error", error);
       });
     setDialogVisibility(true);
   }
@@ -233,16 +229,15 @@ const Products = () => {
             toast.success(res.data, {
               position: toast.POSITION.TOP_RIGHT
             });
+            retriveData();
           })
           .catch((error) => {
             toast.error('Lỗi xoá thông tin sản phẩm !', {
               position: toast.POSITION.TOP_RIGHT
             });
-            console.log("Call API DELETE :/products/:productId error", error);
           });
         setVisibilityDelete(false);
         setProductId('');
-        retriveData();
       },
     },
     {

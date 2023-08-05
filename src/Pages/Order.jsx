@@ -3,7 +3,6 @@ import { ComboBoxComponent } from '@syncfusion/ej2-react-dropdowns';
 import { TextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { DialogComponent } from '@syncfusion/ej2-react-popups';
 import { NumericTextBoxComponent } from '@syncfusion/ej2-react-inputs';
-import { productsOrderGrid } from '../Data/dummy';
 import { Header } from '../Components';
 import { useStateContext } from "../Contexts/ContextProvider";
 import { GridComponent, ColumnsDirective, ColumnDirective, Page, Selection, Inject, Edit, Toolbar, Sort, Filter } from '@syncfusion/ej2-react-grids';
@@ -44,7 +43,6 @@ const Order = () => {
         setProductsData(res.data);
       })
       .catch((error) => {
-        console.log("Call API :/products error", error);
         toast.error('Lỗi truy vấn thông tin sản phẩm !', {
           position: toast.POSITION.TOP_RIGHT
         });
@@ -122,7 +120,6 @@ const Order = () => {
         setDataOldPrice(tmp + listPrice.join(' , '));
       })
       .catch((error) => {
-        console.log("Call API :/old_price/:id error", error);
         toast.error('Lỗi truy vấn dữ liệu !', {
           position: toast.POSITION.TOP_RIGHT
         });

@@ -10,6 +10,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import moment from 'moment';
+import { templateInputPrice, templateBuyPrice, templateTotalInputPrice, templateTotalOutputPrice } from './Common.js'
 
 const Order = () => {
   const { currentColor } = useStateContext();
@@ -65,7 +66,8 @@ const Order = () => {
     obj['buy_price'] = buyPrice;
     obj['note'] = note;
     obj['index'] = indexItem;
-    //console.log(obj)
+    obj['total_input_item'] = quantity * inputPrice;
+    obj['total_output_item'] = quantity * buyPrice;
     productsDataOrder.push(obj);
     setProductsDataOrder(productsDataOrder);
     grid.refresh();
@@ -114,7 +116,7 @@ const Order = () => {
         }
         let listPrice = [];
         dataPrice.forEach((item) => {
-          listPrice.push(new Intl.NumberFormat().format(item.price) + ' (' + moment(item.input_date).format('DD-MM-YYYY') + ')');
+          listPrice.push(new Intl.NumberFormat('en-DE').format(item.price) + ' (' + moment(item.input_date).format('DD-MM-YYYY') + ')');
         });
         let tmp = "Giá cũ: ";
         setDataOldPrice(tmp + listPrice.join(' , '));
@@ -126,7 +128,6 @@ const Order = () => {
       });
     setVisibility(true);
   }
-
 
   function onOverlayClick() {
     setVisibility(false);
@@ -179,25 +180,35 @@ const Order = () => {
   function deleteOrderProduct(id) {
     let newArr = removeObjectWithId(productsDataOrder, id);
     setProductsDataOrder(newArr);
-    let totalIp = fcTotalInputPrice(newArr);
-    setTotalInputPrice(totalIp);
+    if (newArr.length > 0) {
+      let totalIp = fcTotalInputPrice(newArr);
+      setTotalInputPrice(totalIp);
 
-    let totalBuy = fcTotalBuyPrice(newArr);
-    setTotalBuyPrice(totalBuy);
+      let totalBuy = fcTotalBuyPrice(newArr);
+      setTotalBuyPrice(totalBuy);
 
-    let totalPt = totalBuy - totalIp;
-    setTotalProfit(totalPt);
+      let totalPt = totalBuy - totalIp;
+      setTotalProfit(totalPt);
+    } else {
+      setTotalInputPrice(0);
+      setTotalBuyPrice(0);
+      setTotalProfit(0);
+    }
   }
 
   function removeObjectWithId(arr, id) {
     return arr.filter((obj) => obj.id !== id);
   }
   const exportExcel = () => {
-    alert('export excel')
+    toast.error('Chức năng đang phát triển', {
+      position: toast.POSITION.TOP_RIGHT
+    });
   }
 
   const saveOrder = () => {
-    alert('save order');
+    toast.error('Chức năng đang phát triển', {
+      position: toast.POSITION.TOP_RIGHT
+    });
   }
   // setting gird data
   const sortSettings = {
@@ -219,7 +230,7 @@ const Order = () => {
         <br></br>
         <NumericTextBoxComponent floatLabelType="Auto" value={quantity} width={'30%'}
           validateDecimalOnType={true} decimals={0} format='n0'
-          onChange={e => setQuantity(e.value)} min={0} max={1000} placeholder="Số lượng" />
+          onChange={e => setQuantity(e.value)} min={0} max={10000} placeholder="Số lượng" />
         <br></br>
         <NumericTextBoxComponent floatLabelType="Auto" value={inputPrice} width={'30%'} min={0}
           validateDecimalOnType={true} decimals={0} format='n0'
@@ -232,7 +243,7 @@ const Order = () => {
         <TextBoxComponent floatLabelType="Auto" value={note} onChange={e => setNote(e.value)} placeholder="Note" />
         <br></br>
         <button style={{ backgroundColor: currentColor, marginTop: '10px' }} className='btn-add-product'
-          onClick={() => { handleOrderProduct() }}> Thêm</button>
+          onClick={() => { handleOrderProduct() }}>Thêm</button>
       </div>
       <div className="md:m-8 md:p-8 bg-white rounded-2xl">
         <div className='mb-5'>
@@ -251,21 +262,23 @@ const Order = () => {
             <ColumnDirective field='index' width='0' headerText='' textAlign="Center" />
             <ColumnDirective field='product_code' width='60' headerText='Mã sản phẩm' textAlign="Left" />
             <ColumnDirective field='product_name' clipMode='EllipsisWithTooltip' width='100' headerText='Tên sản phẩm' textAlign="Left" />
+            <ColumnDirective field='quantity' width='40' headerText='Số lượng' textAlign="Center" />
             <ColumnDirective field='input_price' width='50' headerText='Giá nhập' textAlign="Center" />
             <ColumnDirective field='buy_price' width='50' headerText='Giá bán' textAlign="Center" />
-            <ColumnDirective field='quantity' width='40' headerText='Số lượng' textAlign="Center" />
+            <ColumnDirective field='total_input_item' width='50' headerText='Tiền nhập' textAlign="Center" />
+            <ColumnDirective field='total_output_item' width='50' headerText='Tiền bán' textAlign="Center" />
             <ColumnDirective field='note' width='100' headerText='Nơi nhập' textAlign="Left" />
           </ColumnsDirective>
           <Inject services={[Page, Toolbar, Selection, Edit, Sort, Filter]} />
         </GridComponent>
         <div className='text-right mt-2'>
-          <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền nhập: <span style={{ color: 'red' }}>{new Intl.NumberFormat().format(totalInputPrice)}</span> VND</span>
+          <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền nhập: <span style={{ color: 'red' }}>{new Intl.NumberFormat('en-DE').format(totalInputPrice)}</span> VND</span>
         </div>
         <div className='text-right mt-2'>
-          <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền bán: <span style={{ color: 'darkgoldenrod' }}>{new Intl.NumberFormat().format(totalBuyPrice)}</span> VND</span>
+          <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền bán: <span style={{ color: 'red' }}>{new Intl.NumberFormat('en-DE').format(totalBuyPrice)}</span> VND</span>
         </div>
         <div className='text-right mt-2'>
-          <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền lãi: <span style={{ color: 'lawngreen' }}>{new Intl.NumberFormat().format(totalProfit)}</span> VND</span>
+          <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền lãi: <span style={{ color: 'lawngreen' }}>{new Intl.NumberFormat('en-DE').format(totalProfit)}</span> VND</span>
         </div>
       </div>
 

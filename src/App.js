@@ -13,8 +13,8 @@ const App = () => {
   const { setCurrentColor, setCurrentMode, currentMode, activeMenu, currentColor, themeSettings, setThemeSettings } = useStateContext();
 
   useEffect(() => {
-    const currentThemeColor = localStorage.getItem('colorMode');
-    const currentThemeMode = localStorage.getItem('themeMode');
+    const currentThemeColor = localStorage.getItem('colorMode') ? localStorage.getItem('colorMode') : "#03C9D7";
+    const currentThemeMode = localStorage.getItem('themeMode') ? localStorage.getItem('themeMode') : 'Light';
     if (currentThemeColor && currentThemeMode) {
       setCurrentColor(currentThemeColor);
       setCurrentMode(currentThemeMode);
@@ -28,8 +28,7 @@ const App = () => {
           <div className="fixed right-4 bottom-4" style={{ zIndex: '1000' }}>
             <TooltipComponent
               content="Settings"
-              position="Top"
-            >
+              position="Top">
               <button
                 type="button"
                 onClick={() => setThemeSettings(true)}
@@ -38,7 +37,6 @@ const App = () => {
               >
                 <FiSettings />
               </button>
-
             </TooltipComponent>
           </div>
           {activeMenu ? (

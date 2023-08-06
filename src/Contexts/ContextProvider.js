@@ -18,6 +18,7 @@ export const ContextProvider = ({ children }) => {
   const [isClicked, setIsClicked] = useState(initialState);
 
   const setMode = (e) => {
+    console.log('setMode', e);
     setCurrentMode(e.target.value);
     localStorage.setItem('themeMode', e.target.value);
   };

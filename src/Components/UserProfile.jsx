@@ -6,7 +6,6 @@ import avatar from '../Data/avatar.png';
 
 const UserProfile = () => {
   const { currentColor } = useStateContext();
-
   return (
     <div className="nav-item absolute right-1 top-16 bg-white p-8 rounded-lg">
       <div className="flex justify-between items-center">
@@ -20,17 +19,13 @@ const UserProfile = () => {
         />
       </div>
       <div className="flex gap-5 items-center mt-6 border-color border-b-1 pb-6">
-        <img
-          className="rounded-full h-24 w-24"
-          src={avatar}
-          alt="user-profile"
-        />
+        <img className="rounded-full h-24 w-24" src={avatar} alt="user-profile" />
         <div>
           <p className="font-semibold text-xl dark:text-gray-500"> Admin </p>
           <p className="text-gray-500 text-sm font-semibold dark:text-gray-400"> info@admin.com </p>
         </div>
       </div>
-      <div className="mt-2">
+      {/* <div className="mt-2">
         <Button
           color="white"
           bgColor={currentColor}
@@ -38,7 +33,7 @@ const UserProfile = () => {
           borderRadius="10px"
           width="full"
         />
-      </div>
+      </div> */}
     </div>
 
   );

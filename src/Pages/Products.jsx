@@ -46,7 +46,6 @@ const Products = () => {
         setUnitsData(res.data);
       })
       .catch((error) => {
-        console.log("Call API GET :/units error", error);
         toast.error('Lỗi truy vấn thông tin đơn vị !', {
           position: toast.POSITION.TOP_RIGHT
         });

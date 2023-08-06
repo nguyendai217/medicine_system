@@ -10,7 +10,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import moment from 'moment';
-import { templateInputPrice, templateBuyPrice, templateTotalInputPrice, templateTotalOutputPrice } from './Common.js'
 
 const Order = () => {
   const { currentColor } = useStateContext();
@@ -226,7 +225,7 @@ const Order = () => {
           onChange={e => setProductOrder(e.value)} fields={fields} dataSource={productsData}
           allowCustom={true} placeholder="Chọn sản phẩm" />
         <button className='ml-10 btn-add-product' style={{ backgroundColor: currentColor, marginLeft: '40px' }}
-          onClick={() => { checkOldPrice(productOrder) }}>Check giá cũ</button>
+          onClick={() => { checkOldPrice(productOrder) }}>Xem giá cũ</button>
         <br></br>
         <NumericTextBoxComponent floatLabelType="Auto" value={quantity} width={'30%'}
           validateDecimalOnType={true} decimals={0} format='n0'

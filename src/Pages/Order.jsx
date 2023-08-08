@@ -5,11 +5,13 @@ import { DialogComponent } from '@syncfusion/ej2-react-popups';
 import { NumericTextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { Header } from '../Components';
 import { useStateContext } from "../Contexts/ContextProvider";
-import { GridComponent, ColumnsDirective, ColumnDirective, Page, Selection, Inject, Edit, Toolbar, Sort, Filter } from '@syncfusion/ej2-react-grids';
+import { GridComponent, ColumnsDirective, ColumnDirective, Page, Selection, Inject, Edit, Toolbar, Sort, Filter, Resize } from '@syncfusion/ej2-react-grids';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import moment from 'moment';
+import * as FileSaver from "file-saver";
+import * as XLSX from "xlsx";
 
 const Order = () => {
   const { currentColor } = useStateContext();
@@ -176,10 +178,13 @@ const Order = () => {
     );
   };
 
-  function deleteOrderProduct(id) {
+  const deleteOrderProduct = (id) => {
     let newArr = removeObjectWithId(productsDataOrder, id);
     setProductsDataOrder(newArr);
-    if (newArr.length > 0) {
+    console.log("newArr", newArr);
+    console.log("productsDataOrder", productsDataOrder);
+
+    if (productsDataOrder.length > 0) {
       let totalIp = fcTotalInputPrice(newArr);
       setTotalInputPrice(totalIp);
 
@@ -195,13 +200,41 @@ const Order = () => {
     }
   }
 
-  function removeObjectWithId(arr, id) {
-    return arr.filter((obj) => obj.id !== id);
+  function removeObjectWithId(array, id) {
+    return array.filter((obj) => obj.id !== id);
   }
   const exportExcel = () => {
-    toast.error('Chức năng đang phát triển', {
-      position: toast.POSITION.TOP_RIGHT
-    });
+    if (productsDataOrder.length <= 0) {
+      toast.error('Không có dữ liệu để export !', {
+        position: toast.POSITION.TOP_RIGHT
+      });
+      return;
+    }
+
+    let newArrayData = [];
+    for (var i = 0; i < productsDataOrder.length; i++) {
+      let object = {};
+      let objData = productsDataOrder[i];
+      object['stt'] = i + 1;
+      object['product_code'] = objData['product_code'];
+      object['product_name'] = objData['product_name'];
+      object['quantity'] = objData['quantity'];
+      object['price'] = objData['input_price'];
+      object['total_input_item'] = objData['total_input_item'];
+      newArrayData.push(object);
+    }
+
+    const fileType =
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
+    const fileExtension = ".xlsx";
+    var fileName = 'Data' + Math.floor(Date.now() / 1000);
+    const ws = XLSX.utils.json_to_sheet(newArrayData);
+    /* custom headers */
+    XLSX.utils.sheet_add_aoa(ws, [["STT", "Mã sản phẩm", "Tên sản phẩm", "Số lượng", "Đơn giá", "Tổng tiền"]], { origin: "A1" });
+    const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: fileType });
+    FileSaver.saveAs(data, fileName + fileExtension);
   }
 
   const saveOrder = () => {
@@ -215,14 +248,14 @@ const Order = () => {
       { field: 'index', direction: 'descending' }
     ]
   };
-  const fields = { text: 'product_name', value: 'id' };
+  const fields = { text: 'product_code', value: 'id' };
   return (
     <>
       <ToastContainer autoClose={3000} />
       <div className="md:m-8 mt-24 p-2 md:p-8 bg-white rounded-2xl">
         <Header category="" title="Order sản phẩm" />
         <ComboBoxComponent showClearButton={true} floatLabelType="Auto" value={productOrder} width={'60%'}
-          onChange={e => setProductOrder(e.value)} fields={fields} dataSource={productsData}
+          onChange={e => setProductOrder(e.target.value)} fields={fields} dataSource={productsData}
           allowCustom={true} placeholder="Chọn sản phẩm" />
         <button className='ml-10 btn-add-product' style={{ backgroundColor: currentColor, marginLeft: '40px' }}
           onClick={() => { checkOldPrice(productOrder) }}>Xem giá cũ</button>
@@ -253,22 +286,22 @@ const Order = () => {
           <button style={{ backgroundColor: currentColor, float: 'right', marginRight: '10px' }} className='btn-add-product' onClick={() => exportExcel()}>Export Excel</button>
         </div>
         <GridComponent
-          dataSource={productsDataOrder} allowPaging allowSorting toolbar={['Delete']} ref={g => grid = g} sortSettings={sortSettings}
-          editSettings={{ allowDeleting: true, allowEditing: true }} width='auto'>
+          dataSource={productsDataOrder} allowPaging allowSorting ref={g => grid = g} sortSettings={sortSettings}
+          width='auto' allowResizing={true}>
           {/*  */}
           <ColumnsDirective>
             <ColumnDirective field='id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
             <ColumnDirective field='index' width='0' headerText='' textAlign="Center" />
-            <ColumnDirective field='product_code' width='60' headerText='Mã sản phẩm' textAlign="Left" />
-            <ColumnDirective field='product_name' clipMode='EllipsisWithTooltip' width='100' headerText='Tên sản phẩm' textAlign="Left" />
-            <ColumnDirective field='quantity' width='40' headerText='Số lượng' textAlign="Center" />
+            <ColumnDirective field='product_code' width='60' headerText='Mã SP' textAlign="Left" />
+            <ColumnDirective field='product_name' clipMode='EllipsisWithTooltip' width='100' headerText='Tên SP' textAlign="Left" />
+            <ColumnDirective field='quantity' width='60' headerText='Số lượng' textAlign="Center" />
             <ColumnDirective field='input_price' width='50' headerText='Giá nhập' textAlign="Center" />
             <ColumnDirective field='buy_price' width='50' headerText='Giá bán' textAlign="Center" />
             <ColumnDirective field='total_input_item' width='50' headerText='Tiền nhập' textAlign="Center" />
             <ColumnDirective field='total_output_item' width='50' headerText='Tiền bán' textAlign="Center" />
-            <ColumnDirective field='note' width='100' headerText='Nơi nhập' textAlign="Left" />
+            <ColumnDirective field='note' width='80' headerText='Note' textAlign="Left" />
           </ColumnsDirective>
-          <Inject services={[Page, Toolbar, Selection, Edit, Sort, Filter]} />
+          <Inject services={[Page, Toolbar, Selection, Edit, Sort, Filter, Resize]} />
         </GridComponent>
         <div className='text-right mt-2'>
           <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền nhập: <span style={{ color: 'red' }}>{new Intl.NumberFormat('en-DE').format(totalInputPrice)}</span> VND</span>

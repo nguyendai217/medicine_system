@@ -66,7 +66,7 @@ const Order = () => {
     obj['input_price'] = inputPrice;
     obj['buy_price'] = buyPrice;
     obj['note'] = note;
-    obj['index'] = indexItem;
+    obj['idx'] = indexItem;
     obj['total_input_item'] = quantity * inputPrice;
     obj['total_output_item'] = quantity * buyPrice;
     productsDataOrder.push(obj);
@@ -151,23 +151,19 @@ const Order = () => {
   ];
 
   function fcTotalInputPrice(listData) {
-    if (listData.length > 0) {
-      let totalInput = 0;
-      listData.forEach(item => {
-        totalInput = totalInput + (item.input_price * item.quantity);
-      })
-      return totalInput;
-    }
+    let totalInput = 0;
+    listData.forEach(item => {
+      totalInput = totalInput + (item.input_price * item.quantity);
+    })
+    return totalInput;
   }
 
   function fcTotalBuyPrice(listData) {
-    if (listData.length > 0) {
-      let totalBuyPrice = 0;
-      listData.forEach(item => {
-        totalBuyPrice = totalBuyPrice + (item.buy_price * item.quantity);
-      })
-      return totalBuyPrice;
-    }
+    let totalBuyPrice = 0;
+    listData.forEach(item => {
+      totalBuyPrice = totalBuyPrice + (item.buy_price * item.quantity);
+    })
+    return totalBuyPrice;
   }
 
   const deleteTemplate = (props) => {
@@ -181,14 +177,16 @@ const Order = () => {
   const deleteOrderProduct = (id) => {
     let newArr = removeObjectWithId(productsDataOrder, id);
     setProductsDataOrder(newArr);
-    console.log("newArr", newArr);
-    console.log("productsDataOrder", productsDataOrder);
+    console.log('newArr', newArr);
+  }
+
+  useEffect(() => {
 
     if (productsDataOrder.length > 0) {
-      let totalIp = fcTotalInputPrice(newArr);
+      let totalIp = fcTotalInputPrice(productsDataOrder);
       setTotalInputPrice(totalIp);
 
-      let totalBuy = fcTotalBuyPrice(newArr);
+      let totalBuy = fcTotalBuyPrice(productsDataOrder);
       setTotalBuyPrice(totalBuy);
 
       let totalPt = totalBuy - totalIp;
@@ -198,10 +196,20 @@ const Order = () => {
       setTotalBuyPrice(0);
       setTotalProfit(0);
     }
-  }
+    grid.refresh();
+    console.log('re-render');
+  }, [productsDataOrder])
 
   function removeObjectWithId(array, id) {
-    return array.filter((obj) => obj.id !== id);
+    if (array.length > 0) {
+      const indexOfObject = array.findIndex(object => {
+        return object.id === id;
+      });
+
+      array.splice(indexOfObject, 1);
+      console.log(array);
+      return array;
+    }
   }
   const exportExcel = () => {
     if (productsDataOrder.length <= 0) {
@@ -245,7 +253,7 @@ const Order = () => {
   // setting gird data
   const sortSettings = {
     columns: [
-      { field: 'index', direction: 'descending' }
+      { field: 'idx', direction: 'descending' }
     ]
   };
   const fields = { text: 'product_code', value: 'id' };
@@ -262,17 +270,17 @@ const Order = () => {
         <br></br>
         <NumericTextBoxComponent floatLabelType="Auto" value={quantity} width={'30%'}
           validateDecimalOnType={true} decimals={0} format='n0'
-          onChange={e => setQuantity(e.value)} min={0} max={10000} placeholder="Số lượng" />
+          onChange={e => setQuantity(e.target.value)} min={0} max={10000} placeholder="Số lượng" />
         <br></br>
         <NumericTextBoxComponent floatLabelType="Auto" value={inputPrice} width={'30%'} min={0}
           validateDecimalOnType={true} decimals={0} format='n0'
-          onChange={e => setInputPrice(e.value)} placeholder="Giá nhập" />
+          onChange={e => setInputPrice(e.target.value)} placeholder="Giá nhập" />
         <br></br>
         <NumericTextBoxComponent floatLabelType="Auto" value={buyPrice} width={'30%'} min={0}
           validateDecimalOnType={true} decimals={0} format='n0'
-          onChange={e => setBuyPrice(e.value)} placeholder="Giá bán" />
+          onChange={e => setBuyPrice(e.target.value)} placeholder="Giá bán" />
         <br></br>
-        <TextBoxComponent floatLabelType="Auto" value={note} onChange={e => setNote(e.value)} placeholder="Note" />
+        <TextBoxComponent floatLabelType="Auto" value={note} onChange={e => setNote(e.target.value)} placeholder="Note" />
         <br></br>
         <button style={{ backgroundColor: currentColor, marginTop: '10px' }} className='btn-add-product'
           onClick={() => { handleOrderProduct() }}>Thêm</button>
@@ -288,10 +296,9 @@ const Order = () => {
         <GridComponent
           dataSource={productsDataOrder} allowPaging allowSorting ref={g => grid = g} sortSettings={sortSettings}
           width='auto' allowResizing={true}>
-          {/*  */}
           <ColumnsDirective>
             <ColumnDirective field='id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
-            <ColumnDirective field='index' width='0' headerText='' textAlign="Center" />
+            <ColumnDirective field='idx' width='0' headerText='' textAlign="Center" />
             <ColumnDirective field='product_code' width='60' headerText='Mã SP' textAlign="Left" />
             <ColumnDirective field='product_name' clipMode='EllipsisWithTooltip' width='100' headerText='Tên SP' textAlign="Left" />
             <ColumnDirective field='quantity' width='60' headerText='Số lượng' textAlign="Center" />
@@ -301,7 +308,7 @@ const Order = () => {
             <ColumnDirective field='total_output_item' width='50' headerText='Tiền bán' textAlign="Center" />
             <ColumnDirective field='note' width='80' headerText='Note' textAlign="Left" />
           </ColumnsDirective>
-          <Inject services={[Page, Toolbar, Selection, Edit, Sort, Filter, Resize]} />
+          <Inject services={[Page, Toolbar, Selection, Sort, Filter, Resize]} />
         </GridComponent>
         <div className='text-right mt-2'>
           <span className='font-bold' style={{ paddingRight: '50px' }}>Tổng tiền nhập: <span style={{ color: 'red' }}>{new Intl.NumberFormat('en-DE').format(totalInputPrice)}</span> VND</span>

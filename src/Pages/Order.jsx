@@ -191,17 +191,6 @@ const Order = () => {
     //grid.refresh();
   }, [totalItem])
 
-  function removeObjectWithId(array, id) {
-    if (array.length > 0) {
-      const indexOfObject = array.findIndex(object => {
-        return object.id === id;
-      });
-
-      array.splice(indexOfObject, 1);
-      setTotalItem(totalItem - 1);
-      return array;
-    }
-  }
   const exportExcel = () => {
     if (productsDataOrder.length <= 0) {
       toast.error('Không có dữ liệu để export !', {
@@ -238,9 +227,31 @@ const Order = () => {
   }
 
   const saveOrder = () => {
-    toast.error('Chức năng đang phát triển', {
-      position: toast.POSITION.TOP_RIGHT
-    });
+    var objOrder = {};
+    objOrder['customer_id'] = 1;
+    objOrder['total_price'] = totalBuyPrice;
+    objOrder['note'] = note;
+    objOrder['total_product'] = productsDataOrder.length;
+    objOrder['profit'] = totalProfit;
+    objOrder['phone_customer'] = '0336518254';
+
+    // call api insert data
+    axios.post('/order', objOrder)
+      .then(resp => {
+        if (resp.status == '201') {
+          toast.success(resp.data.message, {
+            position: toast.POSITION.TOP_RIGHT
+          });
+
+          var orderId = resp.data.insertId;
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        toast.error('Thêm mới order thất bại !', {
+          position: toast.POSITION.TOP_RIGHT
+        });
+      });
   }
   // setting gird data
   const sortSettings = {

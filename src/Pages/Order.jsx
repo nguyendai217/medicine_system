@@ -227,31 +227,37 @@ const Order = () => {
   }
 
   const saveOrder = () => {
-    var objOrder = {};
-    objOrder['customer_id'] = 1;
-    objOrder['total_price'] = totalBuyPrice;
-    objOrder['note'] = note;
-    objOrder['total_product'] = productsDataOrder.length;
-    objOrder['profit'] = totalProfit;
-    objOrder['phone_customer'] = '0336518254';
+    if (productsDataOrder.length > 0) {
+      var objOrder = {};
+      objOrder['customer_id'] = 1;
+      objOrder['total_price'] = totalBuyPrice;
+      objOrder['note'] = note;
+      objOrder['total_product'] = productsDataOrder.length;
+      objOrder['profit'] = totalProfit;
+      objOrder['phone_customer'] = '0336518254';
 
-    // call api insert data
-    axios.post('/order', objOrder)
-      .then(resp => {
-        if (resp.status == '201') {
-          toast.success(resp.data.message, {
+      // call api insert data
+      axios.post('/order', objOrder)
+        .then(resp => {
+          if (resp.status == '201') {
+            toast.success(resp.data.message, {
+              position: toast.POSITION.TOP_RIGHT
+            });
+
+            var orderId = resp.data.insertId;
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          toast.error('Thêm mới order thất bại !', {
             position: toast.POSITION.TOP_RIGHT
           });
-
-          var orderId = resp.data.insertId;
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        toast.error('Thêm mới order thất bại !', {
-          position: toast.POSITION.TOP_RIGHT
         });
+    } else {
+      toast.error('Vui lòng thêm sp vào order !', {
+        position: toast.POSITION.TOP_RIGHT
       });
+    }
   }
   // setting gird data
   const sortSettings = {

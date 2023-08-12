@@ -224,18 +224,18 @@ const Order = () => {
           newArrayData.push(object);
         }
 
-        if (newArrayData.length > 0) {
-          const fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
-          const fileExtension = ".xlsx";
-          var fileName = 'Data' + Math.floor(Date.now() / 1000);
-          const ws = XLSX.utils.json_to_sheet(newArrayData);
-          /* custom headers */
-          XLSX.utils.sheet_add_aoa(ws, [["STT", "Mã sản phẩm", "Tên sản phẩm", "Số lượng", "Đơn vị", "Đơn giá", "Tổng tiền"]], { origin: "A1" });
-          const wb = { Sheets: { data: ws }, SheetNames: ["Sheet1"] };
-          const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-          const data = new Blob([excelBuffer], { type: fileType });
-          FileSaver.saveAs(data, fileName + fileExtension);
-        }
+        const fileType =
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
+        const fileExtension = ".xlsx";
+        var fileName = 'Data' + Math.floor(Date.now() / 1000);
+        const ws = XLSX.utils.json_to_sheet(newArrayData);
+        /* custom headers */
+        XLSX.utils.sheet_add_aoa(ws, [["STT", "Mã sản phẩm", "Tên sản phẩm", "Số lượng", "Đơn vị tính", "Đơn giá", "Tổng tiền"]], { origin: "A1" });
+        const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
+        const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        const data = new Blob([excelBuffer], { type: fileType });
+        FileSaver.saveAs(data, fileName + fileExtension);
+
         setVisibilityExport(false);
       },
     },

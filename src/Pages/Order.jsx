@@ -9,7 +9,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import moment from 'moment';
-import FileSaver from "file-saver";
+import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 
 const Order = () => {
@@ -33,6 +33,8 @@ const Order = () => {
   const [totalProfit, setTotalProfit] = useState(0);
   let grid;
   const [totalItem, setTotalItem] = useState(0);
+
+  const [visibilityExport, setVisibilityExport] = useState(false);
 
   function handleOrderProduct() {
     if (!productOrder || !quantity || !inputPrice || !buyPrice) {
@@ -81,7 +83,7 @@ const Order = () => {
   }
 
   function clearOrder() {
-    setProductOrder(null);
+    setProductOrder('');
     setQuantity('');
     setInputPrice('');
     setBuyPrice('');
@@ -188,8 +190,7 @@ const Order = () => {
       setTotalBuyPrice(0);
       setTotalProfit(0);
     }
-    //grid.refresh();
-  }, [totalItem])
+  }, [totalItem]);
 
   const exportExcel = () => {
     if (productsDataOrder.length <= 0) {
@@ -198,61 +199,103 @@ const Order = () => {
       });
       return;
     }
+    setVisibilityExport(true);
+  };
 
-    let newArrayData = [];
-    for (var i = 0; i < productsDataOrder.length; i++) {
-      let object = {};
-      let objData = productsDataOrder[i];
-      object['stt'] = i + 1;
-      object['product_code'] = objData['product_code'];
-      object['product_name'] = objData['product_name'];
-      object['quantity'] = objData['quantity'];
-      object['unit_name'] = objData['unit_name'];
-      object['price'] = objData['input_price'];
-      object['total_input_item'] = objData['total_input_item'];
-      newArrayData.push(object);
+  const buttonDialogExportExcel = [
+    {
+      buttonModel: {
+        content: "Export",
+        cssClass: 'e-flat',
+        isPrimary: true,
+      },
+      click: () => {
+        let newArrayData = [];
+        for (var i = 0; i < productsDataOrder.length; i++) {
+          let object = {};
+          let objData = productsDataOrder[i];
+          object['stt'] = i + 1;
+          object['product_code'] = objData['product_code'];
+          object['product_name'] = objData['product_name'];
+          object['quantity'] = objData['quantity'];
+          object['unit_name'] = objData['unit_name'];
+          object['price'] = objData['input_price'];
+          object['total_input_item'] = objData['total_input_item'];
+          newArrayData.push(object);
+        }
+
+        if (newArrayData.length > 0) {
+          const fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
+          const fileExtension = ".xlsx";
+          var fileName = 'Data' + Math.floor(Date.now() / 1000);
+          const ws = XLSX.utils.json_to_sheet(newArrayData);
+          /* custom headers */
+          XLSX.utils.sheet_add_aoa(ws, [["STT", "Mã sản phẩm", "Tên sản phẩm", "Số lượng", "Đơn vị", "Đơn giá", "Tổng tiền"]], { origin: "A1" });
+          const wb = { Sheets: { data: ws }, SheetNames: ["Sheet1"] };
+          const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+          const data = new Blob([excelBuffer], { type: fileType });
+          FileSaver.saveAs(data, fileName + fileExtension);
+        }
+        setVisibilityExport(false);
+      },
+    },
+    {
+      buttonModel: {
+        content: "Đóng",
+        cssClass: 'e-flat',
+      },
+      click: () => {
+        setVisibilityExport(false);
+      },
     }
-
-    const fileType =
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
-    const fileExtension = ".xlsx";
-    var fileName = 'Data' + Math.floor(Date.now() / 1000);
-    const ws = XLSX.utils.json_to_sheet(newArrayData);
-    /* custom headers */
-    XLSX.utils.sheet_add_aoa(ws, [["STT", "Mã sản phẩm", "Tên sản phẩm", "Số lượng", "Đơn vị", "Đơn giá", "Tổng tiền"]], { origin: "A1" });
-    const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: fileType });
-    FileSaver.saveAs(data, fileName + fileExtension);
-  }
+  ];
 
   const saveOrder = () => {
     if (productsDataOrder.length > 0) {
-      var objOrder = {};
-      objOrder['customer_id'] = 1;
-      objOrder['total_price'] = totalBuyPrice;
-      objOrder['note'] = note;
-      objOrder['total_product'] = productsDataOrder.length;
-      objOrder['profit'] = totalProfit;
-      objOrder['phone_customer'] = '0336518254';
+      toast.error('Đang phát triển !', {
+        position: toast.POSITION.TOP_RIGHT
+      });
+      // var objOrder = {};
+      // objOrder['customer_id'] = 1;
+      // objOrder['total_price'] = totalBuyPrice;
+      // objOrder['note'] = note;
+      // objOrder['total_product'] = productsDataOrder.length;
+      // objOrder['profit'] = totalProfit;
+      // objOrder['phone_customer'] = '0336518254';
 
-      // call api insert data
-      axios.post('/order', objOrder)
-        .then(resp => {
-          if (resp.status == '201') {
-            toast.success(resp.data.message, {
-              position: toast.POSITION.TOP_RIGHT
-            });
+      // // call api insert data
+      // axios.post('/order', objOrder)
+      //   .then(resp => {
+      //     if (resp.status == '201') {
+      //       toast.success(resp.data.message, {
+      //         position: toast.POSITION.TOP_RIGHT
+      //       });
 
-            var orderId = resp.data.insertId;
-          }
-        })
-        .catch(error => {
-          console.log(error);
-          toast.error('Thêm mới order thất bại !', {
-            position: toast.POSITION.TOP_RIGHT
-          });
-        });
+      //       var orderId = resp.data.insertId;
+      //       var dataOrderDetails = orderDetails(orderId, productsDataOrder);
+
+      //       // call api save order details
+      //       axios.post('/order', objOrder)
+      //         .then(resp => {
+      //           if (resp.status == '201') {
+      //             toast.success(resp.data.message, {
+      //               position: toast.POSITION.TOP_RIGHT
+      //             });
+
+      //           }
+      //         })
+      //         .catch(error => {
+      //           toast.error('Thêm mới order thất bại !', {
+      //             position: toast.POSITION.TOP_RIGHT
+      //           });
+      //         });
+      //     }
+      //   })
+      //   .catch(error => {
+      //     toast.error('Thêm mới order thất bại !', {
+      //       position: toast.POSITION.TOP_RIGHT
+      //     });
+      //   });
     } else {
       toast.error('Vui lòng thêm sp vào order !', {
         position: toast.POSITION.TOP_RIGHT
@@ -265,6 +308,22 @@ const Order = () => {
       { field: 'idx', direction: 'descending' }
     ]
   };
+
+  const orderDetails = (orderId, arrayOrders) => {
+    let arrDataOrder = [];
+    for (var i = 0; i < arrayOrders.length; i++) {
+      let obj = {};
+      obj['id'] = orderId;
+      obj['product_id'] = arrayOrders[i].product_id;
+      obj['quantity'] = arrayOrders[i].quantity;
+      obj['input_price'] = arrayOrders[i].input_price;
+      obj['buy_price'] = arrayOrders[i].buy_price;
+      obj['note'] = arrayOrders[i].note;
+      let propsValue = Object.values(obj);
+      arrDataOrder.push(propsValue);
+    }
+    return arrDataOrder;
+  }
 
   return (
     <>
@@ -306,7 +365,7 @@ const Order = () => {
           <ColumnsDirective>
             <ColumnDirective field='id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />
             <ColumnDirective field='idx' width='0' headerText='' textAlign="Center" />
-            <ColumnDirective field='product_code' width='60' headerText='Mã SP' textAlign="Left" />
+            <ColumnDirective field='product_code' width='50' headerText='Mã SP' textAlign="Left" />
             <ColumnDirective field='product_name' clipMode='EllipsisWithTooltip' width='100' headerText='Tên SP' textAlign="Left" />
             <ColumnDirective field='quantity' width='40' headerText='SL' textAlign="Center" />
             <ColumnDirective field='unit_name' width='30' headerText='ĐV' textAlign="Center" />
@@ -338,6 +397,12 @@ const Order = () => {
             {dataOldPrice}
           </span>
         </div>
+      </DialogComponent>
+
+      <DialogComponent width="600px" isModal={true} visible={visibilityExport}
+        close={dialogClose} overlayClick={onOverlayClick} showCloseIcon={true} header='Export Excel Order' closeOnEscape={false}
+        buttons={buttonDialogExportExcel} position={positionDialog}>
+        <h2>Bạn có muốn export thông tin dữ liệu order không ?</h2>
       </DialogComponent>
     </>
   )

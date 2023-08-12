@@ -13,10 +13,10 @@ import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 
 const Order = () => {
+  let grid;
   const { currentColor } = useStateContext();
   const positionDialog = { X: "center", Y: 18 };
   const [visibility, setVisibility] = useState(false);
-  // const [productsData, setProductsData] = useState([]);
   const [productsDataOrder, setProductsDataOrder] = useState([]);
 
   // input data order
@@ -26,14 +26,12 @@ const Order = () => {
   const [buyPrice, setBuyPrice] = useState();
   const [note, setNote] = useState();
 
-  const [indexItem, setIndexItem] = useState(1);
+  const [indexItem, setIndexItem] = useState(0);
   const [dataOldPrice, setDataOldPrice] = useState('');
   const [totalInputPrice, setTotalInputPrice] = useState(0);
   const [totalBuyPrice, setTotalBuyPrice] = useState(0);
   const [totalProfit, setTotalProfit] = useState(0);
-  let grid;
   const [totalItem, setTotalItem] = useState(0);
-
   const [visibilityExport, setVisibilityExport] = useState(false);
 
   function handleOrderProduct() {
@@ -61,13 +59,13 @@ const Order = () => {
           obj['total_input_item'] = quantity * inputPrice;
           obj['total_output_item'] = quantity * buyPrice;
 
-          productsDataOrder.push(obj);
-          setProductsDataOrder(productsDataOrder);
-          grid.refresh();
+          //productsDataOrder.push(obj);
+          setProductsDataOrder([...productsDataOrder, obj]);
+          // grid.refresh();
           let nextIndex = indexItem + 1;
           setIndexItem(nextIndex);
           clearOrder();
-          setTotalItem(totalItem + 1);
+          setTotalItem(totalItem => totalItem + 1);
         } else {
           toast.error('Không có thông tin mã sp !', {
             position: toast.POSITION.TOP_RIGHT
@@ -167,15 +165,16 @@ const Order = () => {
   };
 
   const deleteOrderProduct = (id) => {
-    let listData = [];
-    for (var i = 0; i < productsDataOrder.length; i++) {
-      if (productsDataOrder[i].id !== id) {
-        listData.push(productsDataOrder[i]);
-      }
-    }
-    setTotalItem(totalItem - 1);
-    setProductsDataOrder(listData);
+
+    setProductsDataOrder(oldValues => {
+      return oldValues.filter(item => item.id !== id)
+    })
+    setTotalItem(totalItem => totalItem - 1)
   }
+
+  useEffect(() => {
+
+  }, [])
 
   useEffect(() => {
     if (productsDataOrder.length > 0) {
@@ -360,7 +359,7 @@ const Order = () => {
           <button style={{ backgroundColor: currentColor, float: 'right', marginRight: '10px' }} className='btn-add-product' onClick={() => exportExcel()}>Export Excel</button>
         </div>
         <GridComponent
-          dataSource={productsDataOrder} allowPaging allowSorting ref={g => grid = g} sortSettings={sortSettings}
+          dataSource={productsDataOrder} allowPaging allowSorting sortSettings={sortSettings}
           width='auto' allowResizing={true}>
           <ColumnsDirective>
             <ColumnDirective field='id' width='20' headerText='' template={deleteTemplate} textAlign="Center" />

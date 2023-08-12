@@ -368,10 +368,10 @@ const Order = () => {
             <ColumnDirective field='product_name' clipMode='EllipsisWithTooltip' width='100' headerText='Tên SP' textAlign="Left" />
             <ColumnDirective field='quantity' width='40' headerText='SL' textAlign="Center" />
             <ColumnDirective field='unit_name' width='30' headerText='ĐV' textAlign="Center" />
-            <ColumnDirective field='input_price' width='50' headerText='Giá nhập' textAlign="Center" />
-            <ColumnDirective field='buy_price' width='50' headerText='Giá bán' textAlign="Center" />
-            <ColumnDirective field='total_input_item' width='50' headerText='Tiền nhập' textAlign="Center" />
-            <ColumnDirective field='total_output_item' width='50' headerText='Tiền bán' textAlign="Center" />
+            <ColumnDirective field='input_price' width='50' format="N0" headerText='Giá nhập' textAlign="Center" />
+            <ColumnDirective field='buy_price' width='50' format="N0" headerText='Giá bán' textAlign="Center" />
+            <ColumnDirective field='total_input_item' width='50' format="N0" headerText='Tiền nhập' textAlign="Center" />
+            <ColumnDirective field='total_output_item' width='50' format="N0" headerText='Tiền bán' textAlign="Center" />
             <ColumnDirective field='note' width='80' headerText='Note' textAlign="Left" />
           </ColumnsDirective>
           <Inject services={[Page, Toolbar, Selection, Sort, Filter, Resize]} />

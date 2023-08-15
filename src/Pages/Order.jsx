@@ -64,6 +64,21 @@ const Order = () => {
           // grid.refresh();
           let nextIndex = indexItem + 1;
           setIndexItem(nextIndex);
+
+          var objOldPrice = {}
+          objOldPrice['product_id'] = res.data.id;
+          objOldPrice['price'] = buyPrice;
+          console.log("old price", JSON.stringify(objOldPrice));
+          axios.post('/old_price', objOldPrice)
+            .then(resp => {
+              if (resp.status == '201') {
+                console.log('insert old_price success');
+              }
+            })
+            .catch(error => {
+              console.log('insert old_price failed');
+            });
+
           clearOrder();
           setTotalItem(totalItem => totalItem + 1);
         } else {
